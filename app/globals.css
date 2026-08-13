@@ -478,106 +478,48 @@ button {
 }
 
 .part-callout {
-  display: grid;
-  min-width: 106px;
-  padding: 8px 10px;
-  grid-template-columns: 24px 1fr;
+  display: block;
+  width: max-content;
+  max-width: 78px;
+  padding: 3px 6px;
   align-items: center;
-  gap: 8px;
-  border: 1px solid color-mix(in srgb, var(--marker-color) 45%, transparent);
-  border-radius: 9px;
-  color: white;
+  border: 1px solid color-mix(in srgb, var(--marker-color) 38%, transparent);
+  border-radius: 999px;
+  color: #dce3ec;
   font-family: ui-sans-serif, system-ui, sans-serif;
-  background: rgba(8, 11, 15, 0.91);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--marker-color) 18%, transparent);
+  font-size: 7px;
+  font-weight: 650;
+  letter-spacing: 0.055em;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(8, 11, 15, 0.78);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--marker-color) 12%, transparent);
   pointer-events: none;
-  transform: translateY(-8px);
+  transform: translateY(-2px);
 }
 
 .part-callout::after {
   position: absolute;
-  bottom: -14px;
+  bottom: -7px;
   left: 50%;
   width: 1px;
-  height: 14px;
+  height: 7px;
   content: "";
   background: var(--marker-color);
 }
 
-.part-callout-label {
-  font-size: 9px;
-  font-weight: 650;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  text-transform: uppercase;
-}
-
-.part-glyph {
-  position: relative;
-  width: 24px;
-  height: 20px;
-  color: var(--marker-color);
-}
-
-.part-glyph::before,
-.part-glyph::after {
-  position: absolute;
-  content: "";
-}
-
-.part-glyph.brake-pad::before {
-  inset: 4px 2px 3px;
-  border: 1px solid currentColor;
-  border-radius: 8px 8px 3px 3px;
-}
-
-.part-glyph.brake-pad::after {
-  right: 7px;
-  bottom: 1px;
-  left: 7px;
-  height: 3px;
-  border: 1px solid currentColor;
-  border-top: 0;
-}
-
-.part-glyph.battery::before {
-  inset: 5px 2px 2px;
-  border: 1px solid currentColor;
-  border-radius: 2px;
-}
-
-.part-glyph.battery::after {
-  top: 2px;
-  left: 6px;
-  width: 12px;
-  height: 4px;
-  border-right: 4px solid currentColor;
-  border-left: 4px solid currentColor;
-}
-
-.part-glyph.oil::before {
-  top: 2px;
-  left: 7px;
-  width: 11px;
-  height: 15px;
-  border: 1px solid currentColor;
-  border-radius: 60% 40% 60% 40%;
-  transform: rotate(45deg);
-}
-
-.part-glyph.oil::after {
-  right: 1px;
-  bottom: 2px;
-  width: 8px;
-  border-top: 1px solid currentColor;
-}
-
 @media (max-width: 900px) {
   body {
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .diagnostics-app {
+    width: 100%;
     grid-template-rows: minmax(430px, 58dvh) minmax(0, 42dvh);
     grid-template-columns: 1fr;
     min-height: 760px;

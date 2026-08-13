@@ -1,6 +1,6 @@
 "use client";
 
-import { Html, OrbitControls, useGLTF } from "@react-three/drei";
+import { Billboard, Html, OrbitControls, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -17,6 +17,24 @@ export interface VehicleSceneProps {
   selectedId: string | null;
   onSelect: (id: string) => void;
   resetSignal: number;
+}
+
+const projectedLabelPosition = new THREE.Vector3();
+
+function calculateClampedLabelPosition(
+  object: THREE.Object3D,
+  camera: THREE.Camera,
+  size: { width: number; height: number },
+) {
+  projectedLabelPosition.setFromMatrixPosition(object.matrixWorld).project(camera);
+  const x = projectedLabelPosition.x * (size.width / 2) + size.width / 2;
+  const y = -(projectedLabelPosition.y * (size.height / 2)) + size.height / 2;
+  const horizontalMargin = Math.min(44, size.width / 2);
+
+  return [
+    THREE.MathUtils.clamp(x, horizontalMargin, size.width - horizontalMargin),
+    THREE.MathUtils.clamp(y, 14, size.height - 14),
+  ];
 }
 
 function useReducedMotion() {
@@ -40,19 +58,21 @@ function SedanModel() {
 
   const blueprintModel = useMemo(() => {
     const clone = scene.clone(true);
-    const bodyMaterial = new THREE.MeshStandardMaterial({
-      color: "#788493",
-      metalness: 0.9,
-      roughness: 0.26,
+    const bodyMaterial = new THREE.MeshPhysicalMaterial({
+      color: "#69788a",
+      metalness: 0.94,
+      roughness: 0.2,
+      clearcoat: 0.72,
+      clearcoatRoughness: 0.24,
       transparent: true,
-      opacity: 0.34,
+      opacity: 0.14,
       side: THREE.DoubleSide,
       depthWrite: false,
     });
     const edgeMaterial = new THREE.LineBasicMaterial({
-      color: "#c6d3e1",
+      color: "#b9c9dc",
       transparent: true,
-      opacity: 0.68,
+      opacity: 0.82,
       depthWrite: false,
     });
 
@@ -62,7 +82,7 @@ function SedanModel() {
       }
 
       child.material = bodyMaterial;
-      const edges = new THREE.EdgesGeometry(child.geometry, 32);
+      const edges = new THREE.EdgesGeometry(child.geometry, 40);
       const outline = new THREE.LineSegments(edges, edgeMaterial);
       outline.renderOrder = 2;
       child.add(outline);
@@ -111,6 +131,98 @@ function MarkerShape({ severity }: { severity: DiagnosticSeverity }) {
   return <sphereGeometry args={[0.065, 16, 16]} />;
 }
 
+function createPartShape(glyph: DiagnosticMarker["glyph"]) {
+  const shape = new THREE.Shape();
+
+  if (glyph === "brake-pad") {
+    shape.moveTo(-0.13, -0.075);
+    shape.lineTo(-0.12, 0.015);
+    shape.quadraticCurveTo(-0.1, 0.105, 0, 0.12);
+    shape.quadraticCurveTo(0.1, 0.105, 0.12, 0.015);
+    shape.lineTo(0.13, -0.075);
+    shape.lineTo(0.065, -0.075);
+    shape.lineTo(0.055, -0.105);
+    shape.lineTo(-0.055, -0.105);
+    shape.lineTo(-0.065, -0.075);
+    shape.closePath();
+    return shape;
+  }
+
+  if (glyph === "battery") {
+    shape.moveTo(-0.13, -0.09);
+    shape.lineTo(0.13, -0.09);
+    shape.lineTo(0.13, 0.075);
+    shape.lineTo(0.055, 0.075);
+    shape.lineTo(0.055, 0.11);
+    shape.lineTo(0.015, 0.11);
+    shape.lineTo(0.015, 0.075);
+    shape.lineTo(-0.055, 0.075);
+    shape.lineTo(-0.055, 0.11);
+    shape.lineTo(-0.095, 0.11);
+    shape.lineTo(-0.095, 0.075);
+    shape.lineTo(-0.13, 0.075);
+    shape.closePath();
+    return shape;
+  }
+
+  shape.moveTo(0, 0.14);
+  shape.bezierCurveTo(0.04, 0.06, 0.12, -0.015, 0.12, -0.075);
+  shape.bezierCurveTo(0.12, -0.145, 0.065, -0.19, 0, -0.19);
+  shape.bezierCurveTo(-0.065, -0.19, -0.12, -0.145, -0.12, -0.075);
+  shape.bezierCurveTo(-0.12, -0.015, -0.04, 0.06, 0, 0.14);
+  shape.closePath();
+  return shape;
+}
+
+function PartSchematic({
+  glyph,
+  color,
+}: {
+  glyph: DiagnosticMarker["glyph"];
+  color: string;
+}) {
+  const { fillGeometry, edgeGeometry } = useMemo(() => {
+    const fill = new THREE.ShapeGeometry(createPartShape(glyph), 12);
+    return {
+      fillGeometry: fill,
+      edgeGeometry: new THREE.EdgesGeometry(fill, 1),
+    };
+  }, [glyph]);
+
+  useEffect(
+    () => () => {
+      fillGeometry.dispose();
+      edgeGeometry.dispose();
+    },
+    [edgeGeometry, fillGeometry],
+  );
+
+  return (
+    <Billboard follow position={[0, 0.03, 0]}>
+      <mesh geometry={fillGeometry} renderOrder={8}>
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={0.16}
+          depthTest={false}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <lineSegments geometry={edgeGeometry} renderOrder={9}>
+        <lineBasicMaterial
+          color={color}
+          transparent
+          opacity={1}
+          depthTest={false}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </lineSegments>
+    </Billboard>
+  );
+}
+
 function DiagnosticPoint({
   marker,
   selected,
@@ -147,28 +259,35 @@ function DiagnosticPoint({
         <MarkerShape severity={marker.severity} />
         <meshBasicMaterial color={color} depthTest={false} toneMapped={false} />
       </mesh>
-      <mesh renderOrder={4} scale={2.25}>
+      <mesh renderOrder={4} scale={selected ? 2.65 : 2.35}>
         <sphereGeometry args={[0.075, 14, 14]} />
         <meshBasicMaterial
           color={color}
           transparent
-          opacity={selected ? 0.16 : 0.09}
+          opacity={selected ? 0.2 : 0.14}
           depthTest={false}
           depthWrite={false}
           toneMapped={false}
         />
       </mesh>
       {selected ? (
-        <Html center position={[0, 0.32, 0]} distanceFactor={7.5} zIndexRange={[20, 0]}>
-          <div
-            className="part-callout"
-            style={{ "--marker-color": color } as React.CSSProperties}
-            aria-hidden="true"
+        <>
+          <PartSchematic glyph={marker.glyph} color={color} />
+          <Html
+            center
+            position={[0, 0.24, 0]}
+            zIndexRange={[20, 0]}
+            calculatePosition={calculateClampedLabelPosition}
           >
-            <span className={`part-glyph ${marker.glyph}`} />
-            <span className="part-callout-label">{marker.label}</span>
-          </div>
-        </Html>
+            <div
+              className="part-callout"
+              style={{ "--marker-color": color } as React.CSSProperties}
+              aria-hidden="true"
+            >
+              {marker.label}
+            </div>
+          </Html>
+        </>
       ) : null}
     </group>
   );
