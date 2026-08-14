@@ -1,11 +1,14 @@
 # Third-party asset attribution
 
-## Kenney Car Kit
+## Executive Sedan
 
 - Asset: `assets/sedan.glb`
-- Creator: Kenney (https://kenney.nl)
-- Source: https://kenney.nl/assets/car-kit
-- License: Creative Commons CC0 1.0 Universal
-- License text: https://creativecommons.org/publicdomain/zero/1.0/
+- Title: Executive Sedan
+- Creator: RCC Design (https://sketchfab.com/rccdesign)
+- Source: https://sketchfab.com/3d-models/executive-sedan-eadf0e3171d74e4999e37898f95578c8
+- License: Creative Commons Attribution 4.0 International
+- License text: https://creativecommons.org/licenses/by/4.0/
 
-The sedan model is distributed with this prototype in its original GLB format.
+The bundled GLB is an adaptation of the downloaded 1K GLB. Embedded textures
+and source materials were removed because the prototype renders the vehicle
+with its own schematic metal and outline materials. Geometry is unchanged.

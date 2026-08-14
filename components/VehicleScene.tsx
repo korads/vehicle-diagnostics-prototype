@@ -12,7 +12,8 @@ import {
   type DiagnosticSeverity,
 } from "@/lib/diagnostics";
 import {
-  executiveSedanProportions,
+  executiveSedanProfile,
+  getCameraFramingScale,
   transformVehiclePosition,
 } from "@/lib/vehicle-profile";
 
@@ -80,23 +81,8 @@ function SedanModel() {
       depthWrite: false,
     });
 
-    const body = clone.getObjectByName("body");
-    if (body) {
-      body.scale.set(
-        executiveSedanProportions.width,
-        executiveSedanProportions.height,
-        executiveSedanProportions.length,
-      );
-    }
-
-    clone.children.forEach((child) => {
-      if (!child.name.startsWith("wheel-")) {
-        return;
-      }
-
-      child.position.x *= executiveSedanProportions.width;
-      child.position.z *= executiveSedanProportions.length;
-    });
+    const floor = clone.getObjectByName("node_TILES_-996_7");
+    floor?.removeFromParent();
 
     clone.traverse((child) => {
       if (!(child instanceof THREE.Mesh)) {
@@ -110,6 +96,8 @@ function SedanModel() {
       child.add(outline);
     });
 
+    clone.rotation.y = executiveSedanProfile.modelRotationY;
+    clone.scale.set(...executiveSedanProfile.modelScale);
     clone.position.y = -0.65;
     return clone;
   }, [scene]);
@@ -317,15 +305,20 @@ function DiagnosticPoint({
 
 function CameraControls({ resetSignal }: { resetSignal: number }) {
   const controls = useRef<OrbitControlsImpl>(null);
-  const { camera, invalidate } = useThree();
+  const { camera, invalidate, size } = useThree();
 
   useEffect(() => {
-    camera.position.set(3.75, 2.35, 4.85);
+    const framingScale = getCameraFramingScale(size.width, size.height);
+    camera.position.set(
+      3.75 * framingScale,
+      2.35 * framingScale,
+      4.85 * framingScale,
+    );
     camera.lookAt(0, 0, 0);
     controls.current?.target.set(0, 0, 0);
     controls.current?.update();
     invalidate();
-  }, [camera, invalidate, resetSignal]);
+  }, [camera, invalidate, resetSignal, size.height, size.width]);
 
   return (
     <OrbitControls
