@@ -11,6 +11,10 @@ import {
   type DiagnosticMarker,
   type DiagnosticSeverity,
 } from "@/lib/diagnostics";
+import {
+  executiveSedanProportions,
+  transformVehiclePosition,
+} from "@/lib/vehicle-profile";
 
 export interface VehicleSceneProps {
   markers: readonly DiagnosticMarker[];
@@ -74,6 +78,24 @@ function SedanModel() {
       transparent: true,
       opacity: 0.82,
       depthWrite: false,
+    });
+
+    const body = clone.getObjectByName("body");
+    if (body) {
+      body.scale.set(
+        executiveSedanProportions.width,
+        executiveSedanProportions.height,
+        executiveSedanProportions.length,
+      );
+    }
+
+    clone.children.forEach((child) => {
+      if (!child.name.startsWith("wheel-")) {
+        return;
+      }
+
+      child.position.x *= executiveSedanProportions.width;
+      child.position.z *= executiveSedanProportions.length;
     });
 
     clone.traverse((child) => {
@@ -247,7 +269,7 @@ function DiagnosticPoint({
   });
 
   return (
-    <group ref={group} position={[...marker.position]}>
+    <group ref={group} position={transformVehiclePosition(marker.position)}>
       <mesh
         renderOrder={5}
         onClick={(event) => {
@@ -298,7 +320,7 @@ function CameraControls({ resetSignal }: { resetSignal: number }) {
   const { camera, invalidate } = useThree();
 
   useEffect(() => {
-    camera.position.set(3.4, 2.25, 4.15);
+    camera.position.set(3.75, 2.35, 4.85);
     camera.lookAt(0, 0, 0);
     controls.current?.target.set(0, 0, 0);
     controls.current?.update();
@@ -339,7 +361,7 @@ export function VehicleScene({
   return (
     <Canvas
       className="scene-canvas"
-      camera={{ position: [3.4, 2.25, 4.15], fov: 34, near: 0.1, far: 100 }}
+      camera={{ position: [3.75, 2.35, 4.85], fov: 33, near: 0.1, far: 100 }}
       dpr={[1, 1.5]}
       frameloop="demand"
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
