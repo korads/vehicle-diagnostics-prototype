@@ -1,0 +1,20 @@
+[
+  {
+    "id": "work-001",
+    "partCode": "brake_pads",
+    "severity": "replace_now",
+    "note": "Остаточная толщина ниже допустимого уровня"
+  },
+  {
+    "id": "work-002",
+    "partCode": "engine_oil",
+    "severity": "replace_soon",
+    "note": "Рекомендуемый интервал — через 1 200 км"
+  },
+  {
+    "id": "work-003",
+    "partCode": "battery",
+    "severity": "inspect",
+    "note": "Проверить напряжение под нагрузкой"
+  }
+]
