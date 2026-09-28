@@ -3,9 +3,12 @@
 An interactive web prototype that maps diagnostic recommendations onto a
 rotatable, blueprint-style 3D sedan.
 
+Live demo: https://kontur-vehicle-diagnostics.korsikov-da.chatgpt.site
+
 ## Features
 
-- CC0 Kenney sedan rendered as a translucent gunmetal shell with outline edges
+- CC BY 4.0 executive sedan rendered as a translucent gunmetal shell with
+  outline edges
 - Fixed-distance mouse and touch rotation with zoom and panning disabled
 - Red, yellow, and blue markers for replacement, upcoming replacement, and
   inspection statuses
